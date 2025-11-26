@@ -112,6 +112,10 @@ spec:
       containers:
       - name: fluent-bit
         image: public.ecr.aws/aws-observability/aws-for-fluent-bit:2.32.4
+        ports:
+        - name: metrics
+          containerPort: 2020
+          protocol: TCP
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
