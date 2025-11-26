@@ -97,9 +97,19 @@ spec:
         app: fluent-bit
     spec:
       serviceAccountName: fluent-bit
+      # Note: Fluent Bit requires root to read /var/log from host
+      # These security settings are the maximum we can apply
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       containers:
       - name: fluent-bit
-        image: amazon/aws-for-fluent-bit:2.31.12
+        image: public.ecr.aws/aws-observability/aws-for-fluent-bit:2.32.4
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: [ALL]
+            add: [DAC_READ_SEARCH]  # Required to read log files
         resources:
           requests:
             cpu: 50m
@@ -110,8 +120,10 @@ spec:
         volumeMounts:
         - name: varlog
           mountPath: /var/log
+          readOnly: true
         - name: config
           mountPath: /fluent-bit/etc/
+          readOnly: true
       volumes:
       - name: varlog
         hostPath:
