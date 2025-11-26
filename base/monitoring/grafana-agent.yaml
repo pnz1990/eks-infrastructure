@@ -51,22 +51,16 @@ data:
 
     discovery.relabel "pods" {
       targets = discovery.kubernetes.pods.targets
+      
       rule {
         source_labels = ["__meta_kubernetes_pod_annotation_prometheus_io_scrape"]
         regex = "true"
         action = "keep"
       }
       rule {
-        source_labels = ["__meta_kubernetes_pod_annotation_prometheus_io_port"]
+        source_labels = ["__meta_kubernetes_pod_ip", "__meta_kubernetes_pod_annotation_prometheus_io_port"]
+        separator = ":"
         target_label = "__address__"
-        regex = "(.+)"
-        replacement = "${1}"
-      }
-      rule {
-        source_labels = ["__address__", "__meta_kubernetes_pod_annotation_prometheus_io_port"]
-        target_label = "__address__"
-        regex = "([^:]+)(?::\\d+)?;(\\d+)"
-        replacement = "$1:$2"
       }
       rule {
         source_labels = ["__meta_kubernetes_namespace"]
@@ -82,7 +76,7 @@ data:
       }
     }
 
-    prometheus.scrape "tictactoe_relabeled" {
+    prometheus.scrape "tictactoe" {
       targets = discovery.relabel.pods.output
       forward_to = [prometheus.remote_write.amp.receiver]
       scrape_interval = "30s"
