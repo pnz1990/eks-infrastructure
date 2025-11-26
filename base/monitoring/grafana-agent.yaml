@@ -1,0 +1,131 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: grafana-agent
+  namespace: monitoring
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::569190534191:role/GrafanaAgentAMPRole
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: grafana-agent
+rules:
+- apiGroups: [""]
+  resources: [nodes, nodes/proxy, nodes/metrics, services, endpoints, pods]
+  verbs: [get, list, watch]
+- apiGroups: [networking.k8s.io]
+  resources: [ingresses]
+  verbs: [get, list, watch]
+- nonResourceURLs: [/metrics, /metrics/cadvisor]
+  verbs: [get]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: grafana-agent
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: grafana-agent
+subjects:
+- kind: ServiceAccount
+  name: grafana-agent
+  namespace: monitoring
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-agent-config
+  namespace: monitoring
+data:
+  agent.yaml: |
+    server:
+      log_level: info
+
+    prometheus:
+      wal_directory: /tmp/wal
+      global:
+        scrape_interval: 30s
+        external_labels:
+          cluster: eks-unique-lofi-goose
+      configs:
+        - name: default
+          remote_write:
+            - url: https://aps-workspaces.ap-northeast-2.amazonaws.com/workspaces/ws-2b9d7962-96d6-4f42-9531-15c7fe088fc2/api/v1/remote_write
+              sigv4:
+                region: ap-northeast-2
+          scrape_configs:
+            # Scrape tictactoe apps
+            - job_name: tictactoe
+              kubernetes_sd_configs:
+                - role: pod
+              relabel_configs:
+                - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+                  action: keep
+                  regex: "true"
+                - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_port]
+                  action: replace
+                  target_label: __address__
+                  regex: (.+)
+                  replacement: ${1}
+                - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+                  action: replace
+                  target_label: __address__
+                  regex: ([^:]+)(?::\d+)?;(\d+)
+                  replacement: $1:$2
+                - source_labels: [__meta_kubernetes_namespace]
+                  target_label: namespace
+                - source_labels: [__meta_kubernetes_pod_name]
+                  target_label: pod
+                - source_labels: [__meta_kubernetes_pod_label_app]
+                  target_label: app
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana-agent
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana-agent
+  template:
+    metadata:
+      labels:
+        app: grafana-agent
+    spec:
+      serviceAccountName: grafana-agent
+      containers:
+      - name: agent
+        image: grafana/agent:v0.40.0
+        args:
+        - -config.file=/etc/agent/agent.yaml
+        - -enable-features=integrations-next
+        ports:
+        - containerPort: 12345
+          name: http
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        volumeMounts:
+        - name: config
+          mountPath: /etc/agent
+        - name: wal
+          mountPath: /tmp/wal
+      volumes:
+      - name: config
+        configMap:
+          name: grafana-agent-config
+      - name: wal
+        emptyDir: {}
