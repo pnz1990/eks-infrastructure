@@ -13,9 +13,9 @@ metadata:
 spec:
   config:
     auth:
-      disable_login_form: false
+      disable_login_form: "false"
     auth.anonymous:
-      enabled: true
+      enabled: "true"
     log:
       mode: console
     security:
