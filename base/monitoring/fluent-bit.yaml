@@ -124,6 +124,8 @@ spec:
         - name: config
           mountPath: /fluent-bit/etc/
           readOnly: true
+        - name: db
+          mountPath: /var/fluent-bit/state
       volumes:
       - name: varlog
         hostPath:
@@ -131,3 +133,5 @@ spec:
       - name: config
         configMap:
           name: fluent-bit-config
+      - name: db
+        emptyDir: {}
