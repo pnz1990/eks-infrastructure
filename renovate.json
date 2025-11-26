@@ -1,0 +1,21 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "kubernetes": {
+    "fileMatch": ["base/.+\\.yaml$"]
+  },
+  "packageRules": [
+    {
+      "matchManagers": ["kubernetes"],
+      "matchPackageNames": ["grafana/alloy"],
+      "groupName": "grafana alloy",
+      "automerge": false
+    },
+    {
+      "matchManagers": ["kubernetes"],
+      "matchPackageNames": ["busybox"],
+      "automerge": true
+    }
+  ],
+  "labels": ["dependencies", "automated"]
+}
