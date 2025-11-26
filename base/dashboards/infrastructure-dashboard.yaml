@@ -105,7 +105,7 @@ spec:
           "type": "table",
           "gridPos": {"h": 8, "w": 24, "x": 0, "y": 24},
           "targets": [{
-            "expr": "kube_pod_info{namespace=~\"monitoring|grafana-operator\"}",
+            "expr": "up{namespace=~\"monitoring|grafana-operator\"}",
             "format": "table",
             "instant": true
           }],
@@ -116,7 +116,7 @@ spec:
               "renameByName": {
                 "namespace": "Namespace",
                 "pod": "Pod",
-                "node": "Node"
+                "app": "App"
               }
             }
           }]
