@@ -1,0 +1,100 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: infrastructure-monitoring
+spec:
+  instanceSelector:
+    matchLabels:
+      dashboards: "grafana"
+  json: |
+    {
+      "title": "EKS Infrastructure Monitoring",
+      "uid": "eks-infra",
+      "timezone": "browser",
+      "schemaVersion": 16,
+      "refresh": "30s",
+      "panels": [
+        {
+          "title": "Grafana Alloy - CPU Usage",
+          "type": "graph",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+          "targets": [{
+            "expr": "rate(process_cpu_seconds_total{namespace=\"monitoring\",pod=~\"grafana-alloy.*\"}[5m])",
+            "legendFormat": "{{pod}}"
+          }],
+          "yaxes": [{"format": "percentunit"}, {"format": "short"}]
+        },
+        {
+          "title": "Grafana Alloy - Memory Usage",
+          "type": "graph",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+          "targets": [{
+            "expr": "process_resident_memory_bytes{namespace=\"monitoring\",pod=~\"grafana-alloy.*\"}",
+            "legendFormat": "{{pod}}"
+          }],
+          "yaxes": [{"format": "bytes"}, {"format": "short"}]
+        },
+        {
+          "title": "Fluent Bit - Records Processed",
+          "type": "graph",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+          "targets": [{
+            "expr": "rate(fluentbit_input_records_total{namespace=\"monitoring\"}[5m])",
+            "legendFormat": "{{pod}}"
+          }],
+          "yaxes": [{"format": "short"}, {"format": "short"}]
+        },
+        {
+          "title": "Fluent Bit - Memory Usage",
+          "type": "graph",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+          "targets": [{
+            "expr": "fluentbit_input_bytes_total{namespace=\"monitoring\"}",
+            "legendFormat": "{{pod}}"
+          }],
+          "yaxes": [{"format": "bytes"}, {"format": "short"}]
+        },
+        {
+          "title": "Grafana Operator - Reconciliation Rate",
+          "type": "graph",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+          "targets": [{
+            "expr": "rate(controller_runtime_reconcile_total{namespace=\"grafana-operator\"}[5m])",
+            "legendFormat": "{{result}}"
+          }],
+          "yaxes": [{"format": "short"}, {"format": "short"}]
+        },
+        {
+          "title": "Grafana Operator - Memory Usage",
+          "type": "graph",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+          "targets": [{
+            "expr": "process_resident_memory_bytes{namespace=\"grafana-operator\"}",
+            "legendFormat": "{{pod}}"
+          }],
+          "yaxes": [{"format": "bytes"}, {"format": "short"}]
+        },
+        {
+          "title": "Pod Status",
+          "type": "table",
+          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 24},
+          "targets": [{
+            "expr": "kube_pod_status_phase{namespace=~\"monitoring|grafana-operator\"}",
+            "format": "table",
+            "instant": true
+          }],
+          "transformations": [{
+            "id": "organize",
+            "options": {
+              "excludeByName": {"Time": true, "__name__": true},
+              "indexByName": {},
+              "renameByName": {
+                "namespace": "Namespace",
+                "pod": "Pod",
+                "phase": "Status"
+              }
+            }
+          }]
+        }
+      ]
+    }
