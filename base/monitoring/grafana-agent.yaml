@@ -94,7 +94,7 @@ data:
 
     prometheus.remote_write "amp" {
       endpoint {
-        url = "https://aps-workspaces.ap-northeast-2.amazonaws.com/workspaces/ws-2b9d7962-96d6-4f42-9531-15c7fe088fc2/api/v1/remote_write"
+        url = "https://aps-workspaces.ap-northeast-2.amazonaws.com/workspaces/ws-62f6ab4b-6a1c-4971-806e-dee13a1e1e95/api/v1/remote_write"
         sigv4 {
           region = "ap-northeast-2"
         }
