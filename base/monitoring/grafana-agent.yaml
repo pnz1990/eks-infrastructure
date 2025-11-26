@@ -45,18 +45,8 @@ metadata:
   namespace: monitoring
 data:
   config.alloy: |
-    prometheus.scrape "tictactoe" {
-      targets = discovery.kubernetes.pods.targets
-      forward_to = [prometheus.remote_write.amp.receiver]
-      scrape_interval = "30s"
-    }
-
     discovery.kubernetes "pods" {
       role = "pod"
-      selectors {
-        role = "pod"
-        label = "app=tictactoe"
-      }
     }
 
     discovery.relabel "pods" {
@@ -90,6 +80,12 @@ data:
         source_labels = ["__meta_kubernetes_pod_label_app"]
         target_label = "app"
       }
+    }
+
+    prometheus.scrape "tictactoe_relabeled" {
+      targets = discovery.relabel.pods.output
+      forward_to = [prometheus.remote_write.amp.receiver]
+      scrape_interval = "30s"
     }
 
     prometheus.remote_write "amp" {
