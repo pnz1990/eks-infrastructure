@@ -1,0 +1,9 @@
+apiVersion: prometheusservice.services.k8s.aws/v1alpha1
+kind: Workspace
+metadata:
+  name: eks-metrics
+spec:
+  alias: eks-metrics
+  tags:
+    Environment: shared
+    ManagedBy: ack
