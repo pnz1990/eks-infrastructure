@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: grafana-operator-amg
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::569190534191:role/GrafanaOperatorAMGRole
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: Grafana
+metadata:
+  name: amg
+  labels:
+    dashboards: amg
+spec:
+  external:
+    url: https://g-8f648e108c.grafana-workspace.ap-northeast-2.amazonaws.com
+    apiKey:
+      name: grafana-amg-api-key
+      key: key

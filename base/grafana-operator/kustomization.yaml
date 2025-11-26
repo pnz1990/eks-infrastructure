@@ -3,3 +3,4 @@ kind: Kustomization
 namespace: grafana-operator
 resources:
 - grafana-operator.yaml
+- amg-instance.yaml
