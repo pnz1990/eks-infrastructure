@@ -1,0 +1,115 @@
+{
+  "title": "EKS Infrastructure Monitoring",
+  "uid": "eks-infra-monitoring",
+  "timezone": "browser",
+  "schemaVersion": 16,
+  "refresh": "30s",
+  "tags": ["infrastructure", "monitoring"],
+  "panels": [
+    {
+      "title": "Grafana Alloy - CPU Usage",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "targets": [{
+        "expr": "rate(process_cpu_seconds_total{namespace=\"monitoring\",pod=~\"grafana-alloy.*\"}[5m])",
+        "legendFormat": "{{pod}}"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        }
+      }
+    },
+    {
+      "title": "Grafana Alloy - Memory Usage",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+      "targets": [{
+        "expr": "process_resident_memory_bytes{namespace=\"monitoring\",pod=~\"grafana-alloy.*\"}",
+        "legendFormat": "{{pod}}"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        }
+      }
+    },
+    {
+      "title": "Fluent Bit - Records Processed",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+      "targets": [{
+        "expr": "rate(fluentbit_input_records_total{namespace=\"monitoring\"}[5m])",
+        "legendFormat": "{{pod}}"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "title": "Fluent Bit - Bytes Processed",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+      "targets": [{
+        "expr": "rate(fluentbit_input_bytes_total{namespace=\"monitoring\"}[5m])",
+        "legendFormat": "{{pod}}"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps"
+        }
+      }
+    },
+    {
+      "title": "Grafana Operator - Reconciliation Rate",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+      "targets": [{
+        "expr": "rate(controller_runtime_reconcile_total{namespace=\"grafana-operator\"}[5m])",
+        "legendFormat": "{{result}}"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        }
+      }
+    },
+    {
+      "title": "Grafana Operator - Memory Usage",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+      "targets": [{
+        "expr": "process_resident_memory_bytes{namespace=\"grafana-operator\"}",
+        "legendFormat": "{{pod}}"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        }
+      }
+    },
+    {
+      "title": "Infrastructure Pods Status",
+      "type": "table",
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 24},
+      "targets": [{
+        "expr": "kube_pod_info{namespace=~\"monitoring|grafana-operator\"}",
+        "format": "table",
+        "instant": true
+      }],
+      "transformations": [{
+        "id": "organize",
+        "options": {
+          "excludeByName": {"Time": true, "__name__": true, "job": true, "instance": true},
+          "renameByName": {
+            "namespace": "Namespace",
+            "pod": "Pod",
+            "node": "Node"
+          }
+        }
+      }]
+    }
+  ]
+}
