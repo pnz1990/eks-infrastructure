@@ -47,6 +47,10 @@ spec:
     metadata:
       labels:
         app: grafana-operator
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
     spec:
       serviceAccountName: grafana-operator
       securityContext:

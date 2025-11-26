@@ -95,6 +95,10 @@ spec:
     metadata:
       labels:
         app: fluent-bit
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "2020"
+        prometheus.io/path: "/api/v1/metrics/prometheus"
     spec:
       serviceAccountName: fluent-bit
       # Note: Fluent Bit requires root to read /var/log from host
